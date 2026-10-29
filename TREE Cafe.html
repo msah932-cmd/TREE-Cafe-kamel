@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#556B2F">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TREE Cafe">
+<title>TREE Cafe</title>
+<style>
+:root{--olive:#556B2F;--deep:#3C4E32;--forest:#263D2B;--sage:#87977A;--pale:#EDF0E6;--ivory:#FDFBF7;--wood:#C9B79C;--gold:#B8995A;--ink:#2b2f26;--muted:#6b7262;--nav:66px;--top:60px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:"Cairo","Noto Kufi Arabic","Segoe UI",Tahoma,Arial,sans-serif;background:var(--ivory);color:var(--ink);overflow:hidden;font-size:16px}
+button,input,textarea{font-family:inherit;font-size:16px;color:inherit}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:3px solid var(--sage);outline-offset:2px}
+button,a,.cat,.tile{touch-action:manipulation}
+
+/* splash */
+#splash{position:fixed;inset:0;z-index:100;background:#225748;display:flex;align-items:center;justify-content:center;transition:opacity .6s,visibility .6s}
+#splash img{width:min(78vw,78vh,420px);height:auto;border-radius:6px}
+#splash.hide{opacity:0;visibility:hidden}
+
+/* header: logo at far left always */
+.top{position:fixed;top:0;left:0;right:0;z-index:20;height:calc(var(--top) + env(safe-area-inset-top));padding:env(safe-area-inset-top) max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left));background:linear-gradient(180deg,var(--olive),var(--deep));color:#fff;display:flex;direction:ltr;align-items:center;justify-content:space-between;box-shadow:0 3px 14px rgba(38,61,43,.3)}
+.top .logo{height:44px;width:44px;border-radius:9px;object-fit:contain;display:block;box-shadow:0 0 0 1.5px rgba(255,255,255,.35)}
+.top .ttl{font-weight:800;font-size:18px;letter-spacing:1px}
+.lang{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.55);color:#fff;border-radius:999px;padding:7px 14px;font-size:13px;cursor:pointer;direction:ltr;font-weight:600;transition:.2s}
+.lang:hover{background:rgba(255,255,255,.28)}
+
+/* screens */
+#app{position:fixed;top:calc(var(--top) + env(safe-area-inset-top));bottom:calc(var(--nav) + env(safe-area-inset-bottom));left:0;right:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+.screen{display:none;padding:18px max(14px,env(safe-area-inset-left)) 28px;max-width:1100px;margin:auto}
+.screen.on{display:block;animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* bottom nav */
+nav{position:fixed;bottom:0;left:0;right:0;z-index:20;height:calc(var(--nav) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:linear-gradient(180deg,var(--deep),var(--forest));display:flex;justify-content:center;box-shadow:0 -3px 14px rgba(38,61,43,.25)}
+nav button{flex:1;max-width:200px;background:none;border:0;color:rgba(255,255,255,.62);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:12.5px;cursor:pointer;position:relative;transition:color .2s}
+nav button:hover{color:#fff}
+nav button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:#fff;font-weight:700}
+nav button.on::before{content:"";position:absolute;top:0;width:34px;height:3px;border-radius:0 0 4px 4px;background:#cfe0a8}
+
+/* common */
+h2.sec{font-size:19px;color:var(--deep);margin:24px 2px 12px;font-weight:800}
+.card{background:#fff;border:1px solid var(--pale);border-radius:18px;padding:16px;box-shadow:0 2px 10px rgba(60,78,50,.07);margin-bottom:12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:14px;padding:13px 18px;font-weight:700;cursor:pointer;min-height:48px;transition:transform .12s,box-shadow .2s,background .2s;text-align:center}
+.btn:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(60,78,50,.18)}
+.btn:active{transform:scale(.98)}
+.btn.p{background:var(--olive);color:#fff}
+.btn.s{background:var(--pale);color:var(--deep)}
+.btn.o{background:#fff;border:1.5px solid var(--olive);color:var(--olive)}
+.btn.wa{background:#25D366;color:#fff;width:100%}
+.btn svg{width:20px;height:20px;flex:0 0 auto}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>.btn{flex:1 1 150px}
+.muted{color:var(--muted);font-size:14.5px;line-height:1.8}
+
+/* hero */
+.hero{position:relative;overflow:hidden;background:radial-gradient(circle at 85% 15%,rgba(255,255,255,.14) 0 90px,transparent 91px),radial-gradient(circle at 10% 90%,rgba(255,255,255,.09) 0 120px,transparent 121px),linear-gradient(155deg,var(--forest),var(--olive));color:#fff;border-radius:24px;padding:28px 20px;margin-bottom:14px;box-shadow:0 8px 24px rgba(38,61,43,.25)}
+.hero h1{font-size:clamp(22px,4.6vw,34px);line-height:1.5;margin-bottom:10px;font-weight:800}
+.hero p{opacity:.93;line-height:1.9;font-size:clamp(14.5px,2.4vw,17px);margin-bottom:18px;max-width:560px}
+.hero .btn{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.45)}
+.hero .btn.main{background:#fff;color:var(--deep);border:0}
+
+/* home tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tile{background:#fff;border:1px solid var(--pale);border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;transition:.2s;box-shadow:0 2px 8px rgba(60,78,50,.06);color:var(--deep);font-weight:700;line-height:1.5}
+.tile:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(60,78,50,.15);border-color:var(--sage)}
+.tile small{display:block;color:var(--muted);font-weight:500;margin-top:4px}
+
+/* menu */
+.search{width:100%;padding:14px 18px;border:1.5px solid var(--pale);border-radius:14px;background:#fff;margin-bottom:12px;box-shadow:0 2px 8px rgba(60,78,50,.05)}
+.search:focus,.f input:focus,.f textarea:focus{outline:none;border-color:var(--olive);box-shadow:0 0 0 3px rgba(85,107,47,.18)}
+.catsw{position:sticky;top:-18px;z-index:5;margin:0 -14px 12px;padding:6px 0 4px;background:linear-gradient(180deg,var(--ivory) 80%,rgba(253,251,247,0))}
+.cats{display:flex;gap:10px;overflow-x:auto;padding:4px 14px 8px;cursor:grab;scrollbar-width:none;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.cats::-webkit-scrollbar{display:none}
+.cats.drag{cursor:grabbing;scroll-snap-type:none}
+.cat{flex:0 0 auto;scroll-snap-align:center;border:1.5px solid var(--olive);background:#fff;color:var(--olive);padding:10px 20px;border-radius:999px;cursor:pointer;white-space:nowrap;font-size:15px;font-weight:600;user-select:none;transition:.2s}
+.cat:hover{background:var(--pale)}
+.cat.on{background:var(--olive);color:#fff;box-shadow:0 4px 12px rgba(85,107,47,.35)}
+.warn{display:flex;gap:10px;align-items:flex-start;background:#fbf5e4;border:1px solid #ecdcae;color:#6b5a1f;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.7;margin-bottom:14px}
+.warn svg{width:20px;height:20px;stroke:#9b7f2a;fill:none;stroke-width:2;flex:0 0 auto;margin-top:2px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+.grid .card{margin:0;transition:.2s}
+.grid .card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(60,78,50,.13)}
+.item h3{font-size:16px;line-height:1.5;margin-bottom:8px;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--pale);color:var(--deep);border-radius:10px;padding:6px 12px;font-size:14px;display:inline-flex;gap:6px;align-items:baseline}
+.chip small{color:var(--muted);font-size:12.5px}
+.chip b{font-size:15.5px}
+.gh{grid-column:1/-1;font-size:17px;color:var(--olive);font-weight:800;margin:14px 2px 0;padding-bottom:6px;border-bottom:2px solid var(--pale)}
+.empty{text-align:center;padding:30px 12px;color:var(--muted)}
+
+/* form */
+.formw{max-width:560px;margin:auto}
+.f{margin-bottom:14px}
+.f label{display:block;font-weight:700;font-size:14.5px;margin-bottom:6px;color:var(--deep)}
+.f input,.f textarea{width:100%;padding:13px 14px;border:1.5px solid var(--pale);border-radius:12px;background:#fff;transition:.2s}
+.f textarea{min-height:90px;resize:vertical}
+.err{color:#b3261e;font-size:13px;margin-top:5px;display:none}
+.f.bad input{border-color:#b3261e}.f.bad .err{display:block}
+.note{background:var(--pale);border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.8;color:var(--deep);margin-top:12px}
+
+/* faq */
+.q{border:1px solid var(--pale);border-radius:14px;margin-bottom:10px;background:#fff;overflow:hidden;box-shadow:0 2px 8px rgba(60,78,50,.05)}
+.q button{width:100%;background:none;border:0;padding:15px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:700;color:var(--deep);text-align:start;cursor:pointer;font-size:15.5px;line-height:1.6}
+.q button:hover{background:#f7f9f2}
+.q .a{display:none;padding:0 16px 16px;color:var(--muted);line-height:1.9;font-size:14.5px}
+.q.on .a{display:block}
+.q .chev{transition:transform .2s;flex:0 0 auto}
+.q.on .chev{transform:rotate(180deg)}
+.faqg{display:grid;gap:0 12px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));align-items:start}
+.hours{display:flex;gap:12px;align-items:flex-start}
+.hours>svg{width:24px;height:24px;stroke:var(--olive);fill:none;stroke-width:1.8;flex:0 0 auto;margin-top:2px}
+.lsw{display:flex;gap:10px}.lsw button{flex:1}.lsw .on{background:var(--olive);color:#fff}
+.two{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.two .card{margin:0}
+
+
+/* reviews */
+.revg{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+.rev{margin:0;transition:.2s}
+.rev:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(60,78,50,.13)}
+.rh{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.av{width:42px;height:42px;border-radius:50%;background:linear-gradient(145deg,var(--sage),var(--olive));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;flex:0 0 auto}
+.rh b{display:block;font-size:15px;line-height:1.3}
+.rh small{color:var(--muted);font-size:12.5px}
+.rec{margin-inline-start:auto;background:var(--pale);color:var(--deep);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;white-space:nowrap}
+.rev p{line-height:1.9;font-size:15px;margin-bottom:10px;text-align:start}
+.tg{display:flex;flex-wrap:wrap;gap:6px}
+.tg span{background:#f4f6ee;border:1px solid var(--pale);color:var(--deep);border-radius:8px;padding:3px 9px;font-size:12.5px}
+.revnote{color:var(--muted);font-size:13px;margin:0 2px 12px;line-height:1.7}
+
+/* follow footer (every page) */
+.follow{margin-top:30px;padding:20px 16px;border-radius:20px;background:linear-gradient(155deg,var(--forest),var(--deep));color:#fff;text-align:center}
+.follow b{display:block;margin-bottom:12px;font-size:16px}
+.follow .row{justify-content:center}
+.follow .btn{flex:0 1 190px;background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.4)}
+.follow .btn:hover{background:#fff;color:var(--deep)}
+.follow svg{width:22px;height:22px}
+@media (min-width:700px){nav{left:50%;right:auto;transform:translateX(-50%);width:min(620px,92vw);bottom:12px;height:var(--nav);padding-bottom:0;border-radius:22px;overflow:hidden}#app{bottom:calc(var(--nav) + 24px)}.screen{padding-bottom:40px}}
+@media (max-width:360px){.cat{padding:9px 14px;font-size:14px}.top .ttl{font-size:16px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div id="splash"><img id="splashLogo" alt="TREE Cafe"></div>
+
+<header class="top">
+  <img class="logo" id="hdrLogo" alt="TREE Cafe">
+  <span class="ttl">TREE Cafe</span>
+  <button class="lang" id="langBtn" aria-label="Language">العربية | English</button>
+</header>
+
+<main id="app">
+
+  <section class="screen on" id="s-home">
+    <div class="hero">
+      <h1 data-i="heroH"></h1>
+      <p data-i="heroP"></p>
+      <div class="row">
+        <button class="btn main" data-go="menu" data-i="exploreMenu"></button>
+        <button class="btn" data-go="reserve" data-i="reserveNow"></button>
+        <a class="btn" data-map target="_blank" rel="noopener" data-i="ourLoc"></a>
+      </div>
+    </div>
+    <div class="card"><h2 class="sec" style="margin-top:0" data-i="aboutT"></h2><p class="muted" data-i="aboutP"></p></div>
+    <h2 class="sec" data-i="popCats"></h2>
+    <div class="tiles" id="tiles"></div>
+    <div class="warn" style="margin-top:14px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/></svg><span data-i="priceNote"></span></div>
+    <h2 class="sec" data-i="revT"></h2>
+    <p class="revnote" data-i="revSub"></p>
+    <div class="revg" id="revHome"></div>
+    <div class="card hours" style="margin-top:14px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><div><b data-i="hoursT"></b><p class="muted" data-i="hoursP"></p></div></div>
+    <div class="row">
+      <a class="btn p" href="tel:+201090103828"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.500a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><span data-i="callUs"></span></a>
+      <a class="btn wa" style="flex:1 1 150px" target="_blank" rel="noopener" href="https://wa.me/201090103828"><svg class="waic" viewBox="0 0 24 24" fill="currentColor"></svg><span data-i="wa"></span></a>
+    </div>
+    <h2 class="sec" data-i="faqT"></h2>
+    <div class="faqg" id="faqPrev"></div>
+    <button class="btn s" style="width:100%" data-go="more" data-scroll="faqBox" data-i="allFaq"></button>
+    <div class="follow"></div>
+  </section>
+
+  <section class="screen" id="s-menu">
+    <input class="search" id="search" data-iph="search" type="search" autocomplete="off">
+    <div class="catsw"><div class="cats" id="cats"></div></div>
+    <div class="warn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/></svg><span data-i="priceNote"></span></div>
+    <div class="grid" id="menuList"></div>
+    <div class="follow"></div>
+  </section>
+
+  <section class="screen" id="s-reserve">
+    <div class="formw">
+    <h2 class="sec" style="margin-top:4px" data-i="resT"></h2>
+    <form id="form" class="card" novalidate>
+      <div class="f" id="f-name"><label for="name" data-i="fName"></label><input id="name" autocomplete="name"><div class="err" data-i="eName"></div></div>
+      <div class="f" id="f-phone"><label for="phone" data-i="fPhone"></label><input id="phone" type="tel" inputmode="tel" autocomplete="tel"><div class="err" data-i="ePhone"></div></div>
+      <div class="f" id="f-date"><label for="date" data-i="fDate"></label><input id="date" type="date"><div class="err" data-i="eDate"></div></div>
+      <div class="f" id="f-time"><label for="time" data-i="fTime"></label><input id="time" type="time"><div class="err" data-i="eTime"></div></div>
+      <div class="f" id="f-guests"><label for="guests" data-i="fGuests"></label><input id="guests" type="number" min="1" max="50" inputmode="numeric"><div class="err" data-i="eGuests"></div></div>
+      <div class="f"><label for="notes" data-i="fNotes"></label><textarea id="notes"></textarea></div>
+      <button type="submit" class="btn wa"><svg class="waic" viewBox="0 0 24 24" fill="currentColor"></svg><span data-i="sendWa"></span><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <div class="note" data-i="resNote"></div>
+    </form>
+    <div class="follow"></div>
+    </div>
+  </section>
+
+  <section class="screen" id="s-more">
+    <div class="two">
+      <div class="card"><h2 class="sec" style="margin-top:0" data-i="aboutT"></h2><p class="muted" data-i="aboutP"></p></div>
+      <div class="card hours"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><div><b data-i="hoursT"></b><p class="muted" data-i="hoursP"></p></div></div>
+      <div class="card"><h2 class="sec" style="margin-top:0" data-i="contactT"></h2>
+        <div class="row">
+          <a class="btn p" href="tel:+201090103828" data-i="callUs"></a>
+          <a class="btn s" target="_blank" rel="noopener" href="https://wa.me/201090103828" data-i="wa"></a>
+          <a class="btn o" data-map target="_blank" rel="noopener" data-i="ourLoc"></a>
+        </div>
+        <p class="muted" style="margin-top:10px;direction:ltr;text-align:start">+20 10 90103828</p>
+      </div>
+    </div>
+    <h2 class="sec" data-i="revT"></h2>
+    <p class="revnote" data-i="revSub"></p>
+    <div class="revg" id="revMore"></div>
+    <div class="row" style="margin-top:12px">
+      <a class="btn p" id="revFbBtn" target="_blank" rel="noopener" data-i="revFb"></a>
+      <a class="btn o" data-map target="_blank" rel="noopener" data-i="revBtn"></a>
+    </div>
+    <h2 class="sec" id="faqBox" data-i="faqT"></h2>
+    <div class="faqg" id="faqAll"></div>
+    <div class="card" style="margin-top:12px"><h2 class="sec" style="margin-top:0" data-i="langT"></h2>
+      <div class="lsw"><button class="btn s" data-l="ar">العربية</button><button class="btn s" data-l="en">English</button></div></div>
+    <div class="follow"></div>
+  </section>
+</main>
+
+<nav id="nav">
+  <button data-go="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span data-i="nHome"></span></button>
+  <button data-go="menu"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h4"/></svg><span data-i="nMenu"></span></button>
+  <button data-go="reserve"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg><span data-i="nRes"></span></button>
+  <button data-go="more"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span data-i="nMore"></span></button>
+</nav>
+
+<script>
+const LOGO="data:image/jpeg;base64,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";
+['splashLogo','hdrLogo'].forEach(id=>document.getElementById(id).src=LOGO);
+
+/* ===== روابط المتابعة (غيّر رابط فيسبوك لرابط صفحة الكافيه الرسمية) ===== */
+const INSTAGRAM_URL="https://www.instagram.com/treecaffe/";
+const FACEBOOK_URL="https://www.facebook.com/search/top?q=TREE%20Cafe%20Shibin%20El%20Kom";
+const WA_NUMBER="201090103828";
+const MAPS="https://www.google.com/maps/search/?api=1&query=TREE+Cafe%2C+H2F3%2B8R7%2C+Shibin+El+Kom%2C+Monufia%2C+Egypt";
+const WA_PATH="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.2 14c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .6l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.300 1.700 2.100 1.100 1 2.100 1.300 2.400 1.500.3.1.5.1.6-.1l.9-1.100c.2-.3.4-.2.6-.1l1.900.9c.3.1.5.2.5.3.1.2.1.8-.1 1.400z";
+
+const CATS=[
+{id:"hot",ar:"المشروبات الساخنة والكلاسيك",en:"Hot Drinks & Classics",raw:`
+إبريسو|Espresso|سنجل~Single~50;دبل~Double~60
+ماكياتو|Macchiato|سنجل~Single~60;دبل~Double~70
+قهوة تركي|Turkish Coffee|سنجل~Single~50;دبل~Double~60
+قهوة فرنسي|French Coffee|65
+قهوة بالبندق|Hazelnut Coffee|75
+إبريسو أفوكادو|Espresso Avocado|70
+إبريسو كون بانا|Espresso Con Panna|75
+لاتيه|Latte|75
+ماتشا لاتيه|Matcha Latte|85
+سبانيش لاتيه|Spanish Latte|90
+كاراميل لاتيه|Caramel Latte|90
+بيستاشيو لاتيه|Pistachio Latte|100
+كاراميل ماكياتو|Caramel Macchiato|95
+لاتيه بالبندق|Hazelnut Latte|90
+كوكيز لاتيه|Cookies Latte|90
+سنيكرز لاتيه|Snickers Latte|100
+كريامي لوتس لاتيه|Creamy Lotus Latte|90
+كابتشينو|Cappuccino|85
+فلات وايت|Flat White|90
+كورتادو|Cortado|75
+موكا (أسود - أبيض)|Mocha (Dark - White)|80
+أمريكانو|Americano|55
+أمريكانو أبيض|White Americano|65
+نسكافيه|Nescafé|70
+شاي إنجليزي|English Tea|44
+شاي أخضر|Green Tea|44
+أعشاب|Herbal Tea|44
+هوت سايدر|Hot Cider|70
+هوت شوكليت كلاسيك|Hot Chocolate Classic|79
+هوت شوكليت نوتيلا|Hot Chocolate Nutella|84
+هوت شوكليت أوريو|Hot Chocolate Oreo|84
+سحلب كلاسيك|Sahlab Classic|80
+سحلب بالفواكه|Sahlab with Fruits|95
+سحلب بالمكسرات|Sahlab with Nuts|90`},
+{id:"cold",ar:"المشروبات الباردة والآيس كوفي",en:"Cold Drinks & Iced Coffee",raw:`
+آيس لاتيه|Iced Latte|99
+آيس كاراميل ماكياتو|Iced Caramel Macchiato|99
+آيس بلو لاتيه|Iced Blue Latte|104
+آيس لوتس لاتيه|Iced Lotus Latte|109
+آيس كابتشينو|Iced Cappuccino|104
+آيس موكا أبيض|Iced White Mocha|104
+آيس موكا أسود|Iced Dark Mocha|104
+آيس ووترملون لاتيه|Iced Watermelon Latte|130
+آيس سبانيش لاتيه|Iced Spanish Latte|130
+آيس بيستاشيو لاتيه|Iced Pistachio Latte|109
+آيس ماتشا|Iced Matcha|125
+آيس سبانيش ماتشا|Iced Spanish Matcha|139
+آيس ستروبري ماتشا|Iced Strawberry Matcha|135
+آيس بلوبيري ماتشا|Iced Blueberry Matcha|135`},
+{id:"shake",ar:"الميلك شيك والفرابيه",en:"Milkshake & Frappe",raw:`
+ميلك شيك فانيليا|Vanilla Milkshake|99
+ميلك شيك شوكولاتة|Chocolate Milkshake|99
+ميلك شيك كاراميل|Caramel Milkshake|99
+ميلك شيك فراولة|Strawberry Milkshake|99
+ميلك شيك مانجو|Mango Milkshake|99
+ميلك شيك لوتس|Lotus Milkshake|109
+ميلك شيك بيستاشيو|Pistachio Milkshake|119
+ميلك شيك أوريو|Oreo Milkshake|109
+ميلك شيك سنيكرز|Snickers Milkshake|119
+ميلك شيك كيت كات|KitKat Milkshake|119
+ميلك شيك بلوبيري|Blueberry Milkshake|109
+ميلك شيك ميكس بيري|Mixed Berry Milkshake|114
+ميلك شيك تشيز كيك|Cheesecake Milkshake|130
+ميلك شيك براونيز|Brownies Milkshake|120
+ميلك شيك كيندر|Kinder Milkshake|119
+فرابيه فانيليا|Vanilla Frappe|90
+فرابيه شوكولاتة|Chocolate Frappe|90
+فرابيه كاراميل|Caramel Frappe|90
+فرابيه نوتيلا|Nutella Frappe|95
+فرابيه لوتس|Lotus Frappe|95
+فرابيه أوريو|Oreo Frappe|95
+فرابيه نوتيلا أوريو|Nutella Oreo Frappe|100
+فرابيه بيستاشيو|Pistachio Frappe|110
+فرابيه شوكولاتة سنيكرز|Chocolate Snickers Frappe|100
+فرابيه شوكولاتة كوكيز|Chocolate Cookies Frappe|100
+فرابيه ماتشا|Matcha Frappe|110
+فرابتشينو كاراميل|Caramel Frappuccino|125
+فرابتشينو نوتيلا|Nutella Frappuccino|130
+فرابتشينو بيستاشيو|Pistachio Frappuccino|130
+فرابتشينو فانيليا|Vanilla Frappuccino|120
+فرابتشينو شوكولاتة|Chocolate Frappuccino|125
+فرابتشينو كلاود|Cloud Frappuccino|130`},
+{id:"juice",ar:"العصائر والساموثي والكوكتيلات",en:"Juices, Smoothies & Cocktails",raw:`
+عصير مانجو|Mango Juice|80
+عصير فراولة|Strawberry Juice|80
+عصير جوافة|Guava Juice|80
+عصير بلح|Dates Juice|80
+عصير ليمون|Lemon Juice|65
+عصير ليمون نعناع|Lemon Mint Juice|69
+عصير موز|Banana Juice|80
+عصير بطيخ|Watermelon Juice|80
+عصير بطيخ نعناع|Watermelon Mint Juice|84
+عصير كانتالوب|Cantaloupe Juice|80
+عصير كانتالوب نعناع|Cantaloupe Mint Juice|84
+سموثي مانجو|Mango Smoothie|95
+سموثي فراولة|Strawberry Smoothie|95
+سموثي جوافة|Guava Smoothie|95
+سموثي ميكس بيري|Mixed Berry Smoothie|95
+سموثي بلوبيري|Blueberry Smoothie|95
+سموثي باشن فروت|Passion Fruit Smoothie|104
+سموثي خوخ|Peach Smoothie|95
+سموثي بينا كولادا|Piña Colada Smoothie|99
+سموثي ليمون|Lemon Smoothie|74
+سموثي ليمون نعناع|Lemon Mint Smoothie|79
+سموثي بطيخ|Watermelon Smoothie|95
+ليموناد بلو بيري فريز|Blueberry Freeze Lemonade|79
+ليموناد باشن فروت فريز|Passion Fruit Freeze Lemonade|105
+ليموناد ستروبري فريز|Strawberry Freeze Lemonade|79
+بابي لوف|Puppy Love|99
+ترانكيلو|Tranquilo|100
+تريبل إتش|Triple H|105
+موهيتو كلاسيك|Classic Mojito|90
+موهيتو نكهات|Flavored Mojito|95
+زبادي خوخ|Peach Yogurt|95
+زبادي بلوبيري|Blueberry Yogurt|95
+زبادي فراولة|Strawberry Yogurt|95
+زبادي ميكس بيري|Mixed Berry Yogurt|99
+فليكس|Flex|105
+آيس تي فراولة|Strawberry Iced Tea|95
+آيس تي باشن فروت|Passion Fruit Iced Tea|95
+آيس تي خوخ|Peach Iced Tea|90
+آيس كركديه خوخ|Peach Iced Hibiscus|85
+إلكتريك صودا|Electric Soda|95
+ألكسندر|Alexander|80
+فروت سالاد|Fruit Salad|100`},
+{id:"boba",ar:"البوبا والمشروبات الغازية",en:"Boba & Soft Drinks",raw:`
+آيس بوبا|Iced Boba|110
+موهيتو بوبا|Mojito Boba|120
+ميلك شيك بوبا|Milkshake Boba|150
+بيبسي|Pepsi|45
+بيبسي دايت|Diet Pepsi|45
+سفن أب|7UP|45
+ريد بول|Red Bull|90
+مياه|Water|15`},
+{id:"dessert",ar:"تري ديسيرت",en:"Tree Dessert",raw:`
+تشيز كيك شوكولاتة|Chocolate Cheesecake|119
+تشيز كيك كاراميل|Caramel Cheesecake|114
+تشيز كيك نوتيلا|Nutella Cheesecake|119
+تشيز كيك لوتس|Lotus Cheesecake|119
+تشيز كيك فراولة|Strawberry Cheesecake|119
+تشيز كيك بلوبيري|Blueberry Cheesecake|119
+تشيز كيك بيستاشيو|Pistachio Cheesecake|124
+تشيز كيك كيندر|Kinder Cheesecake|129
+سينابون شوكولاتة|Chocolate Cinnabon|119
+سينابون كاراميل|Caramel Cinnabon|119
+سينابون بلوبيري|Blueberry Cinnabon|129
+سينابون بيستاشيو|Pistachio Cinnabon|134
+سينابون كيندر|Kinder Cinnabon|134
+سينابون ميكس|Mixed Cinnabon|124
+فاهة سينابون|Fattah Cinnabon|124
+ميني سينابون|Mini Cinnabon|r119-179
+كيكة شوكولاتة|Chocolate Cake|119
+مولتن كيك|Molten Cake|119
+براونيز|Brownies|99
+فوندو|Fondue|119`},
+{id:"pancake",ar:"بان كيك",en:"Pancake",raw:`
+بان كيك كيندر|Kinder Pancake|12 قطعة~12 pcs~110;25 قطعة~25 pcs~200
+بان كيك نوتيلا|Nutella Pancake|12 قطعة~12 pcs~110;25 قطعة~25 pcs~200
+بان كيك ميكس|Mixed Pancake|12 قطعة~12 pcs~130;25 قطعة~25 pcs~230
+بان كيك لوتس|Lotus Pancake|12 قطعة~12 pcs~110;25 قطعة~25 pcs~200
+بان كيك بيستاشيو|Pistachio Pancake|12 قطعة~12 pcs~110;25 قطعة~25 pcs~200`},
+{id:"extras",ar:"إضافات متنوعة",en:"Extras",raw:`
+نكهة|Flavor|30
+توبينج|Topping|35
+عسل|Honey|25
+مكسرات|Nuts|40
+لبن|Milk|25
+آيس كريم|Ice Cream|40
+ويب كريم|Whipped Cream|25`},
+{id:"special",ar:"منتجات خاصة (قهوة)",en:"Special Coffee",raw:`
+قهوة تركي|Turkish Coffee|1 كيلو~1 kg~1050
+قهوة بالبندق|Hazelnut Coffee|1 كيلو~1 kg~950
+إبريسو|Espresso|1150`}
+];
+
+
+/* تحويل النص إلى أصناف */
+const ITEMS=[];
+CATS.forEach(c=>c.raw.trim().split('\n').forEach(line=>{
+  const [ar,en,pr]=line.split('|').map(s=>s.trim());
+  let p;
+  if(pr.startsWith('r')){const [a,b]=pr.slice(1).split('-').map(Number);p={range:[a,b]};}
+  else if(pr.includes('~')){p={list:pr.split(';').map(x=>{const [la,le,v]=x.split('~');return {la,le,v:+v};})};}
+  else p={list:[{la:'',le:'',v:+pr}]};
+  ITEMS.push({c:c.id,ar,en,p});
+}));
+
+const T={
+ar:{nHome:"الرئيسية",nMenu:"المنيو",nRes:"الحجز",nMore:"المزيد",
+ heroH:"لحظاتك الحلوة تبدأ من TREE Cafe",heroP:"استمتع بمشروباتك المفضلة وأوقات جميلة في أجواء مريحة في شبين الكوم.",
+ exploreMenu:"استكشف المنيو",reserveNow:"احجز الآن",ourLoc:"موقعنا",callUs:"اتصل بنا",wa:"واتساب",
+ aboutT:"عن TREE Cafe",aboutP:"TREE Cafe كافيه في شبين الكوم بمحافظة المنوفية، يقدّم مشروبات وحلويات متنوعة في أجواء مريحة تناسب الجلسات مع الأصدقاء والعائلة.",
+ popCats:"أقسام المنيو",items:"صنف",
+ priceNote:"الأسعار بالجنيه المصري وقد تتغير، يرجى مراجعة الأسعار مع الفرع.",
+ hoursT:"مواعيد العمل",hoursP:"الكافيه مفتوح 24 ساعة يوميًا، على مدار أيام الأسبوع.",
+ faqT:"الأسئلة الشائعة",allFaq:"عرض كل الأسئلة",
+ search:"ابحث باسم الصنف",all:"الكل",noRes:"لا توجد نتائج مطابقة.",egp:"ج.م",
+ resT:"احجز ترابيزة",fName:"الاسم بالكامل",fPhone:"رقم الهاتف",fDate:"تاريخ الحجز",fTime:"وقت الحجز",fGuests:"عدد الأشخاص",fNotes:"ملاحظات إضافية (اختياري)",
+ eName:"من فضلك اكتب الاسم بالكامل.",ePhone:"من فضلك اكتب رقم هاتف صحيح.",eDate:"من فضلك اختر تاريخًا لا يسبق اليوم.",eTime:"من فضلك اختر وقت الحجز.",eGuests:"من فضلك اكتب عدد الأشخاص (من 1 إلى 50).",
+ sendWa:"إرسال عبر واتساب",resNote:"سيفتح واتساب برسالة جاهزة إلى رقم الكافيه دون إرسالها تلقائيًا. الحجز غير مؤكد حتى يؤكده الكافيه لك.",
+ contactT:"تواصل معنا",revT:"آراء العملاء",revSub:"مختارات من تقييمات حقيقية نشرها عملاء على صفحة الكافيه في فيسبوك (نصوص التقييمات بصياغة أصحابها).",revFb:"عرض كل التقييمات على فيسبوك",revBtn:"التقييمات على خرائط جوجل",recommends:"يوصي بالكافيه",langT:"اللغة",
+ follow:"تابعنا على",fb:"فيسبوك",ig:"إنستجرام",from:"من",to:"إلى",
+ msg:o=>`مرحبًا TREE Cafe، أرغب في حجز ترابيزة.\n\nالاسم: ${o.name}\nرقم الهاتف: ${o.phone}\nالتاريخ: ${o.date}\nالوقت: ${o.time}\nعدد الأشخاص: ${o.guests}`+(o.notes?`\nملاحظات إضافية: ${o.notes}`:'')+`\n\nبرجاء تأكيد الحجز. شكرًا لكم.`},
+en:{nHome:"Home",nMenu:"Menu",nRes:"Reserve",nMore:"More",
+ heroH:"Your Good Moments Start at TREE Cafe",heroP:"Enjoy your favorite drinks and relaxing moments in a welcoming atmosphere in Shibin El-Kom.",
+ exploreMenu:"Explore Menu",reserveNow:"Reserve Now",ourLoc:"Our Location",callUs:"Call Us",wa:"WhatsApp",
+ aboutT:"About TREE Cafe",aboutP:"TREE Cafe is a café in Shibin El-Kom, Monufia Governorate, serving a variety of drinks and desserts in a relaxing atmosphere for friends and family.",
+ popCats:"Menu Sections",items:"items",
+ priceNote:"Prices are in Egyptian pounds and may change. Please confirm current prices with the branch.",
+ hoursT:"Opening Hours",hoursP:"The café is open 24 hours a day, every day of the week.",
+ faqT:"Frequently Asked Questions",allFaq:"View all questions",
+ search:"Search by item name",all:"All",noRes:"No matching results.",egp:"EGP",
+ resT:"Reserve a table",fName:"Full name",fPhone:"Phone number",fDate:"Reservation date",fTime:"Reservation time",fGuests:"Number of guests",fNotes:"Additional notes (optional)",
+ eName:"Please enter your full name.",ePhone:"Please enter a valid phone number.",eDate:"Please choose a date that is not in the past.",eTime:"Please choose a time.",eGuests:"Please enter the number of guests (1 to 50).",
+ sendWa:"Send via WhatsApp",resNote:"WhatsApp will open with a ready message to the café's number; it is not sent automatically. Your reservation is not confirmed until the café confirms it.",
+ contactT:"Contact Us",revT:"Customer Reviews",revSub:"A selection of genuine reviews posted by customers on the café's Facebook page (original Arabic wording of each reviewer).",revFb:"See all reviews on Facebook",revBtn:"Reviews on Google Maps",recommends:"Recommends",langT:"Language",
+ follow:"Follow us on",fb:"Facebook",ig:"Instagram",from:"from",to:"to",
+ msg:o=>`Hello TREE Cafe, I would like to reserve a table.\n\nName: ${o.name}\nPhone Number: ${o.phone}\nReservation Date: ${o.date}\nReservation Time: ${o.time}\nNumber of Guests: ${o.guests}`+(o.notes?`\nAdditional Notes: ${o.notes}`:'')+`\n\nPlease confirm the reservation. Thank you.`}
+};
+const FAQ=[
+{q:{ar:"هل يوفر TREE Cafe أماكن هادئة للمذاكرة؟",en:"Does TREE Cafe offer quiet places for studying?"},
+ a:{ar:"تشير المعلومات المتاحة عن TREE Cafe إلى وجود جلسات مريحة مناسبة للمذاكرة والعمل، مع مقابس كهرباء لاستخدام اللابتوب. يُفضّل التواصل مع الكافيه للتأكد من الهدوء وتوفر المقاعد في وقت زيارتك.",en:"Available information describes comfortable seating suitable for studying and working, with power outlets for laptops. Contact the café to confirm seating availability and noise levels."}},
+{q:{ar:"ما هي أفضل المشروبات التي ينصح بتجربتها؟",en:"Which drinks are recommended to try?"},
+ a:{ar:"يمكنك استكشاف المنيو لمعرفة المشروبات المتاحة وأسعارها الحالية. وتشمل الخيارات المقترحة القهوة المقطرة واللاتيه، إلى جانب المشروبات الباردة مثل الميلك شيك والفرابيه.",en:"Browse the menu to see the available drinks and prices. Suggested options include pour-over coffee, latte, milkshakes, and frappés."}},
+{q:{ar:"أين يقع TREE Cafe بالتحديد في شبين الكوم؟",en:"Where exactly is TREE Cafe located in Shibin El-Kom?"},
+ a:{ar:"يقع TREE Cafe في شبين الكوم بمحافظة المنوفية. اضغط على زر «موقعنا» لفتح خرائط جوجل والحصول على الاتجاهات إلى الموقع المسجل بالكود H2F3+8R7.",en:"TREE Cafe is located in Shibin El-Kom, Monufia Governorate, Egypt. Click “Our Location” to open Google Maps using the plus code H2F3+8R7."}},
+{q:{ar:"هل الكافيه مناسب للعائلات والأطفال؟",en:"Is the café suitable for families and children?"},
+ a:{ar:"تشير المعلومات المتاحة إلى أن الكافيه يرحب بالعائلات ويوفر جلسات مريحة وخيارات متنوعة في المنيو. يُفضّل التواصل مع الكافيه للاستفسار عن الخدمات المتاحة واحتياجات الأطفال قبل الزيارة.",en:"Available information indicates that the café welcomes families and offers comfortable seating and a varied menu. Contact the café to confirm the facilities and services currently available for children."}},
+{q:{ar:"ما هي مواعيد العمل الرسمية في الكافيه؟",en:"What are the café's opening hours?"},
+ a:{ar:"الكافيه مفتوح 24 ساعة يوميًا، على مدار أيام الأسبوع.",en:"The café is open 24 hours a day, every day of the week."}},
+{q:{ar:"هل تتوفر خدمة التوصيل للمنازل في شبين الكوم؟",en:"Is home delivery available in Shibin El-Kom?"},
+ a:{ar:"تشير المعلومات المنشورة إلى توفر خدمة توصيل داخل شبين الكوم والمناطق المحيطة. يُرجى الاتصال بالكافيه على الرقم 01090103828 للتأكد من تغطية منطقتك ورسوم التوصيل والحد الأدنى للطلب، إن وُجد.",en:"Published information indicates that delivery is available in Shibin El-Kom and nearby areas. Call +20 10 90103828 to confirm delivery coverage, fees, and any minimum order requirement."}},
+{q:{ar:"كيف يمكنني التواصل مع TREE Cafe أو الوصول إليه؟",en:"How can I contact TREE Cafe or get directions?"},
+ a:{ar:"يمكنك الاتصال بالكافيه، أو فتح محادثة واتساب، أو الضغط على زر «موقعنا» لفتح خرائط جوجل والحصول على الاتجاهات.",en:"You can call the café, open its WhatsApp chat, or click “Our Location” to open Google Maps and get directions."}}
+];
+
+
+/* تقييمات حقيقية من صفحة الكافيه على فيسبوك (نصوصها كما كتبها أصحابها) */
+const TAGS={"شاي رائع":"Great tea","وجبات رخيصة":"Affordable meals","موقع ملائم":"Convenient location","أفضل قهوة":"Best coffee","خبراء صناعة القهوة":"Coffee-making experts","شبكة Wi-Fi مجانية":"Free Wi-Fi","معجنات لذيذة":"Delicious pastries"};
+const REVIEWS=[
+ {n:"Malek Z.",d:{ar:"12 يوليو 2023",en:"Jul 12, 2023"},t:"المكان جميل والخدمه ممتازة والفيو رائع والاصطاف زوق ومحترم",g:["شاي رائع","وجبات رخيصة","موقع ملائم","أفضل قهوة","خبراء صناعة القهوة","شبكة Wi-Fi مجانية"]},
+ {n:"Mohamed M.",d:{ar:"28 مايو 2023",en:"May 28, 2023"},t:"المكان جامد والمشروبات حلوه والأكل كمان ممتاز والاحسن أن مفيش خدمة مضافه ع الشيك والمكان هادي والمعاملة بتاعه الاصطاف جميله وناس زوق",g:["وجبات رخيصة","خبراء صناعة القهوة","شبكة Wi-Fi مجانية","أفضل قهوة"]},
+ {n:"Said T.",d:{ar:"28 مايو 2023",en:"May 28, 2023"},t:"المكان المفضل لي الاكل ممتاز والقهوه والاصطاف ممتاز ومحترم جدا",g:["أفضل قهوة","معجنات لذيذة","وجبات رخيصة"]},
+ {n:"Mostafa H.",d:{ar:"11 مارس 2023",en:"Mar 11, 2023"},t:"احسن مكان ف المنوفيه خدمه محترمه وناس شيك جدا بالتوفيق دايماااا اصطاف محترم شكرا ليكم 🙏❤️",g:[]}
+];
+function renderReviews(){
+  const html=REVIEWS.map(r=>`<div class="card rev"><div class="rh"><div class="av">${r.n[0]}</div><div><b><bdi>${r.n}</bdi></b><small>${lang==='ar'?r.d.ar:r.d.en}</small></div><span class="rec">${t('recommends')}</span></div><p dir="rtl" lang="ar">${r.t}</p>${r.g.length?`<div class="tg">${r.g.map(x=>`<span>${lang==='ar'?x:TAGS[x]}</span>`).join('')}</div>`:''}</div>`).join('');
+  ['#revHome','#revMore'].forEach(id=>{const e=$(id);if(e)e.innerHTML=html;});
+  const fb=$('#revFbBtn');if(fb)fb.href=FACEBOOK_URL;
+}
+
+let lang=(function(){try{return localStorage.getItem('tc_lang')||'ar'}catch(e){return'ar'}})(), cat='all', q='';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const t=k=>T[lang][k], L=o=>lang==='ar'?o.ar:o.en;
+const num=v=>(Number.isInteger(v)?v:v.toFixed(2));
+
+const FBIC='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 8h3V4h-3a4 4 0 0 0-4 4v2H7v4h3v8h4v-8h3l1-4h-4V8.500c0-.3.2-.5.5-.5z"/></svg>';
+const IGIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.500" cy="6.500" r=".8" fill="currentColor"/></svg>';
+
+function applyLang(){
+  document.documentElement.lang=lang; document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  try{localStorage.setItem('tc_lang',lang)}catch(e){}
+  $$('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));
+  $$('[data-iph]').forEach(e=>e.placeholder=t(e.dataset.iph));
+  $$('[data-l]').forEach(b=>b.classList.toggle('on',b.dataset.l===lang));
+  $$('[data-map]').forEach(a=>a.href=MAPS);
+  $$('.waic').forEach(s=>s.innerHTML='<path d="'+WA_PATH+'"/>');
+  $$('.follow').forEach(f=>f.innerHTML=`<b>${t('follow')}</b><div class="row"><a class="btn" target="_blank" rel="noopener" href="${FACEBOOK_URL}">${FBIC}<span>${t('fb')}</span></a><a class="btn" target="_blank" rel="noopener" href="${INSTAGRAM_URL}">${IGIC}<span>${t('ig')}</span></a></div>`);
+  renderCats();renderMenu();renderFaq();renderTiles();renderReviews();
+}
+function renderTiles(){
+  $('#tiles').innerHTML=CATS.map(c=>`<div class="tile" role="button" tabindex="0" data-tile="${c.id}">${L(c)}<small>${ITEMS.filter(i=>i.c===c.id).length} ${t('items')}</small></div>`).join('');
+}
+document.addEventListener('click',e=>{const x=e.target.closest('[data-tile]');if(x){cat=x.dataset.tile;go('menu');renderCats();renderMenu();}});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.dataset&&e.target.dataset.tile){e.preventDefault();e.target.click();}});
+
+function renderFaq(){
+  const mk=f=>`<div class="q"><button type="button" aria-expanded="false"><span>${L(f.q)}</span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="a">${L(f.a)}</div></div>`;
+  $('#faqPrev').innerHTML=FAQ.slice(0,3).map(mk).join('');
+  $('#faqAll').innerHTML=FAQ.map(mk).join('');
+}
+document.addEventListener('click',e=>{const b=e.target.closest('.q button');if(b){const p=b.parentElement;p.classList.toggle('on');b.setAttribute('aria-expanded',p.classList.contains('on'));}});
+
+function renderCats(){
+  $('#cats').innerHTML=[{id:'all'},...CATS].map(c=>`<button class="cat${c.id===cat?' on':''}" data-c="${c.id}">${c.id==='all'?t('all'):L(c)}</button>`).join('');
+}
+function chips(it){
+  if(it.p.range)return `<span class="chip"><small>${t('from')}</small><b>${num(it.p.range[0])}</b><small>${t('to')}</small><b>${num(it.p.range[1])}</b><small>${t('egp')}</small></span>`;
+  return it.p.list.map(x=>`<span class="chip">${x.la?`<small>${lang==='ar'?x.la:x.le}</small>`:''}<b>${num(x.v)}</b><small>${t('egp')}</small></span>`).join('');
+}
+function card(it){return `<div class="card item"><h3>${L(it)}</h3><div class="chips">${chips(it)}</div></div>`;}
+function renderMenu(){
+  const qq=q.trim().toLowerCase();
+  const match=it=>!qq||(it.ar+' '+it.en).toLowerCase().includes(qq);
+  let html='';
+  CATS.forEach(c=>{
+    if(cat!=='all'&&cat!==c.id)return;
+    const its=ITEMS.filter(i=>i.c===c.id&&match(i));
+    if(!its.length)return;
+    if(cat==='all'||qq)html+=`<div class="gh">${L(c)}</div>`;
+    html+=its.map(card).join('');
+  });
+  $('#menuList').innerHTML=html||`<div class="empty" style="grid-column:1/-1">${t('noRes')}</div>`;
+}
+$('#search').addEventListener('input',e=>{q=e.target.value;renderMenu();});
+
+/* شريط التصنيفات: لمس + ماوس (سحب وعجلة) */
+const cats=$('#cats');let dn=false,sx=0,ss=0,mv=false;
+cats.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'){dn=true;mv=false;sx=e.clientX;ss=cats.scrollLeft;}});
+window.addEventListener('pointermove',e=>{if(!dn)return;const d=e.clientX-sx;if(Math.abs(d)>4){mv=true;cats.classList.add('drag');}cats.scrollLeft=ss-d;});
+window.addEventListener('pointerup',()=>{dn=false;cats.classList.remove('drag');});
+cats.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){cats.scrollLeft+=e.deltaY;e.preventDefault();}},{passive:false});
+cats.addEventListener('click',e=>{
+  if(mv){mv=false;return;}
+  const b=e.target.closest('.cat');if(!b)return;
+  cat=b.dataset.c;renderCats();renderMenu();
+  const on=cats.querySelector('.on');if(on)on.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+});
+
+function go(name,scrollId){
+  $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+name));
+  $$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.go===name));
+  $('#app').scrollTop=0;
+  if(scrollId)setTimeout(()=>{const el=document.getElementById(scrollId);if(el)el.scrollIntoView({behavior:'smooth'});},80);
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)go(b.dataset.go,b.dataset.scroll);});
+
+$('#langBtn').addEventListener('click',()=>{lang=lang==='ar'?'en':'ar';applyLang();});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-l]');if(b){lang=b.dataset.l;applyLang();}});
+
+const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
+$('#date').min=now.toISOString().slice(0,10);
+$('#form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const v={name:$('#name').value.trim(),phone:$('#phone').value.trim(),date:$('#date').value,time:$('#time').value,guests:$('#guests').value.trim(),notes:$('#notes').value.trim()};
+  const g=+v.guests;
+  const ok={name:v.name.length>=3,phone:/^\+?[0-9\s-]{8,15}$/.test(v.phone),date:!!v.date&&v.date>=$('#date').min,time:!!v.time,guests:Number.isInteger(g)&&g>=1&&g<=50};
+  Object.keys(ok).forEach(k=>$('#f-'+k).classList.toggle('bad',!ok[k]));
+  if(Object.values(ok).includes(false)){const f=$('.f.bad');if(f)f.scrollIntoView({behavior:'smooth',block:'center'});return;}
+  window.open('https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent(T[lang].msg(v)),'_blank','noopener');
+});
+
+applyLang();
+setTimeout(()=>{const s=$('#splash');s.classList.add('hide');setTimeout(()=>s.remove(),700);},3000);
+</script>
+</body>
+</html>
